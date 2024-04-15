@@ -1,9 +1,33 @@
 'use client'
 
+import * as React from 'react'
+import { useChat } from 'ai/react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { useChat } from 'ai/react'
-import * as React from 'react'
+
+function ChatMessage({
+  type,
+  children,
+}: {
+  type: 'bot' | 'user'
+  children: React.ReactNode
+}) {
+  const className =
+    type === 'user'
+      ? 'rounded-xl py-2 px-4 bg-gray-100 dark:bg-gray-800 self-end'
+      : ''
+  let message = children
+  if (typeof message === 'string') {
+    message = message.split('\n').map((m, i) => (
+      <React.Fragment key={i}>
+        {m}
+        <br />
+      </React.Fragment>
+    ))
+  }
+
+  return <div className={className}>{message}</div>
+}
 
 export default function ChatBot() {
   const { messages, input, handleInputChange, handleSubmit, error } = useChat()
@@ -17,33 +41,12 @@ export default function ChatBot() {
         This is a generated course on strategic planning. Initiate a chat to
         begin.
       </p>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '2em',
-          marginTop: '5em',
-        }}
-      >
-        {messages.map((m, index) => {
-          if (m.role === 'user') {
-            return (
-              <React.Fragment key={index}>
-                <div
-                  className="rounded-xl p-4 bg-gray-100 dark:bg-gray-800"
-                  style={{ alignSelf: 'flex-end' }}
-                >
-                  {m.content}
-                </div>
-              </React.Fragment>
-            )
-          }
-          return (
-            <React.Fragment key={index}>
-              <div>{m.content}</div>
-            </React.Fragment>
-          )
-        })}
+      <div className="flex flex-col space-y-8 mt-20">
+        {messages.map((m, index) => (
+          <ChatMessage key={index} type={m.role === 'user' ? 'user' : 'bot'}>
+            {m.content}
+          </ChatMessage>
+        ))}
         {error && (
           <div className="text-red-500 border border-orange-500 py-2 px-4 rounded-md">
             Something went wrong :(
